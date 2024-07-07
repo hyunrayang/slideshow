@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Slideshow</title>
+    <style>
+        #slideshow {
+            width: 600px;
+            height: 400px;
+            position: relative;
+            margin: auto;
+            overflow: hidden;
+        }
+        #slideshow img {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            opacity: 0;
+            transition: opacity 1s;
+        }
+        #slideshow img.active {
+            opacity: 1;
+        }
+        #fullscreenBtn {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.5);
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
+            z-index: 10;
+        }
+        #exitFullscreenBtn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.5);
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
+            display: none;
+            z-index: 10;
+        }
+    </style>
+</head>
+<body>
+    <input type="file" id="imageUpload" accept="image/*" multiple>
+    <div id="slideshow">
+        <button id="fullscreenBtn">Fullscreen</button>
+        <button id="exitFullscreenBtn">X</button>
+    </div>
+
+    <script>
+        let currentIndex = 0;
+        let images = [];
+        const slideshowContainer = document.getElementById('slideshow');
+        const fullscreenBtn = document.getElementById('fullscreenBtn');
+        const exitFullscreenBtn = document.getElementById('exitFullscreenBtn');
+
+        document.getElementById('imageUpload').addEventListener('change', function(event) {
+            const files = event.target.files;
+            images = [];
+            slideshowContainer.innerHTML = '';  // Clear previous images
+            slideshowContainer.appendChild(fullscreenBtn);  // Re-append fullscreen button
+            slideshowContainer.appendChild(exitFullscreenBtn);  // Re-append exit fullscreen button
+
+            for (let i = 0; i < files.length && i < 4; i++) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+                    if (i === 0) img.classList.add('active');
+                    slideshowContainer.appendChild(img);
+                    images.push(img);
+                }
+                reader.readAsDataURL(files[i]);
+            }
+        });
+
+        function showNextImage() {
+            if (images.length > 0) {
+                images[currentIndex].classList.remove('active');
+                currentIndex = (currentIndex + 1) % images.length;
+                images[currentIndex].classList.add('active');
+            }
+        }
+
+        setInterval(showNextImage, 2000);
+
+        fullscreenBtn.addEventListener('click', () => {
+            if (slideshowContainer.requestFullscreen) {
+                slideshowContainer.requestFullscreen();
+            } else if (slideshowContainer.mozRequestFullScreen) { // Firefox
+                slideshowContainer.mozRequestFullScreen();
+            } else if (slideshowContainer.webkitRequestFullscreen) { // Chrome, Safari and Opera
+                slideshowContainer.webkitRequestFullscreen();
+            } else if (slideshowContainer.msRequestFullscreen) { // IE/Edge
+                slideshowContainer.msRequestFullscreen();
+            }
+            fullscreenBtn.style.display = 'none';
+            exitFullscreenBtn.style.display = 'block';
+        });
+
+        exitFullscreenBtn.addEventListener('click', () => {
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+            } else if (document.mozCancelFullScreen) { // Firefox
+                document.mozCancelFullScreen();
+            } else if (document.webkitExitFullscreen) { // Chrome, Safari and Opera
+                document.webkitExitFullscreen();
+            } else if (document.msExitFullscreen) { // IE/Edge
+                document.msExitFullscreen();
+            }
+            fullscreenBtn.style.display = 'block';
+            exitFullscreenBtn.style.display = 'none';
+        });
+
+        document.addEventListener('fullscreenchange', () => {
+            if (!document.fullscreenElement) {
+                fullscreenBtn.style.display = 'block';
+                exitFullscreenBtn.style.display = 'none';
+            }
+        });
+
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape' && document.fullscreenElement) {
+                document.exitFullscreen();
+                fullscreenBtn.style.display = 'block';
+                exitFullscreenBtn.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>
